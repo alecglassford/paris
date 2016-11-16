@@ -1,4 +1,5 @@
 import csv
+import json
 from os import makedirs, path
 from urllib.parse import urlparse
 
@@ -11,7 +12,9 @@ base_index_url = 'http://www.theparisreview.org/interviews/{}s'
 
 data_path = 'data'
 makedirs(data_path, exist_ok=True)
-interviews_filename = path.join(data_path, 'interviews.csv')
+raw_interview_path = path.join(data_path, 'raw')
+makedirs(raw_interview_path, exist_ok=True)
+listing_filename = path.join(data_path, 'interviews.json')
 
 # /path => http://www.theparisreview.org/path
 def proper_url(url):
@@ -31,32 +34,50 @@ def get_decade_listing(index_url):
     interviews = index.find_all(class_='archive-interview')
     for interview in interviews:
         try:
-            writer_name = interview.h3.get_text()
+            author = {}
+            author['writer_name'] = interview.h3.get_text()
             assert(interview.h3.a['href'] == interview.a['href']) # sanity check
-            interview_url = proper_url(interview.h3.a['href'])
-            photo_url = proper_url(interview.img['src'])
-            row = (writer_name, interview_url, photo_url)
+            author['interview_url'] = proper_url(interview.h3.a['href'])
+            author['photo_url'] = proper_url(interview.img['src'])
         except:
             print('Could not process this interview:', interview.get_text(strip=True))
         else:
-            result.append(row)
-            print('Processed', writer_name)
+            result.append(author)
+            print('Processed', author['writer_name'])
     print('Finished processing', index_url)
     return result
 
-def get_interview_listing():
+def get_complete_listing():
     interviews =[]
     for decade in decades:
         index_url = base_index_url.format(decade)
         interviews.extend(get_decade_listing(index_url))
     return interviews
 
-def save_interviews_csv(interviews):
-    with open(interviews_filename, 'w', newline='') as interviews_csv:
-        csv_writer = csv.writer(interviews_csv)
-        csv_writer.writerow(['writer_name', 'interview_url', 'photo_url'])
-        csv_writer.writerows(interviews)
+def save_listing(interviews):
+    with open(listing_filename, 'w', newline='') as listing_json:
+        json.dump(interviews, listing_json, ensure_ascii=False, indent=2)
+
+def save_interview(writer_name, interview_url):
+    resp = requests.get(interview_url)
+    if not resp.ok:
+        print('Failed to get', interview_url)
+        return
+    dom = BeautifulSoup(resp.text, 'html.parser')
+    interview = dom.find(class_='detail-interviews-description')
+    paragraphs = [p.get_text() for p in interview.find_all('p')]
+    filename = path.join(raw_interview_path, writer_name + '.txt')
+    # appending allows writers with multiple interviews to combine into one file
+    with open(filename, 'a') as output:
+        output.write('\n'.join(paragraphs))
+        output.write('\n')
+    print('Wrote to', filename)
+
+def save_all_interviews(interviews):
+    for interview in interviews:
+        save_interview(interview['writer_name'], interview['interview_url'])
 
 if __name__ == '__main__':
-    interviews = get_interview_listing()
-    save_interviews_csv(interviews)
+    interviews = get_complete_listing()
+    save_listing(interviews)
+    save_all_interviews(interviews)
