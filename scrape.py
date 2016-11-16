@@ -1,20 +1,16 @@
 import csv
 import json
-from os import makedirs, path
+from os import path
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 import requests
 
+from settings import *
+
 decades = range(1950, 2020, 10)
 hostname = 'http://www.theparisreview.org'
 base_index_url = 'http://www.theparisreview.org/interviews/{}s'
-
-data_path = 'data'
-makedirs(data_path, exist_ok=True)
-raw_interview_path = path.join(data_path, 'raw')
-makedirs(raw_interview_path, exist_ok=True)
-listing_filename = path.join(data_path, 'interviews.json')
 
 # /path => http://www.theparisreview.org/path
 def proper_url(url):
