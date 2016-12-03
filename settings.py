@@ -10,3 +10,5 @@ influence_path = path.join(data_path, 'influence')
 makedirs(influence_path, exist_ok=True)
 
 listing_filename = path.join(data_path, 'interviews.json')
+
+final_filename = 

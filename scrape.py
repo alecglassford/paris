@@ -1,5 +1,6 @@
 import csv
 import json
+import re
 from os import path
 from urllib.parse import urlparse
 
@@ -11,8 +12,10 @@ from settings import *
 decades = range(1950, 2020, 10)
 hostname = 'http://www.theparisreview.org'
 base_index_url = 'http://www.theparisreview.org/interviews/{}s'
+writer_type_pattern = re.compile(r'art-of-(the-\w+|\w+)-')
+have_of_the_day = False # An interview that appears on every listing page. Flip to True when we have it already.
 
-# /path => http://www.theparisreview.org/path
+# /<path> => http://www.theparisreview.org/<path>
 def proper_url(url):
     parsed = urlparse(url)
     if not parsed.netloc:
@@ -27,14 +30,27 @@ def get_decade_listing(index_url):
         print('Failed to get', index_url)
         return None
     index = BeautifulSoup(resp.text, 'html.parser')
-    interviews = index.find_all(class_='archive-interview')
+    interviews = index.find_all('article')
     for interview in interviews:
         try:
+            if 'of-the-day_interview' in interview['class']: # annoying case
+                global have_of_the_day # I hate this chunk of code very much
+                if have_of_the_day:
+                    print('Already have', interview.get_text(strip=True), 'skipping')
+                    continue
+                else:
+                    have_of_the_day = True
             author = {}
-            author['writer_name'] = interview.h3.get_text()
-            assert(interview.h3.a['href'] == interview.a['href']) # sanity check
-            author['interview_url'] = proper_url(interview.h3.a['href'])
-            author['photo_url'] = proper_url(interview.img['src'])
+            author['writer_name'] = interview.h1.get_text()
+            author['interview_url'] = proper_url(interview.a['href'])
+            if 'data-src' in interview.img:
+                author['photo_url'] = proper_url(interview.img['data-src'])
+            else:
+                author['photo_url'] = proper_url(interview.img['src'])
+            # Try to get writer type ('fiction', 'poetry', 'biography', etc.)
+            writer_type = writer_type_pattern.search(author['interview_url'])
+            if writer_type:
+                author['writer_type'] = writer_type.group(1)
         except:
             print('Could not process this interview:', interview.get_text(strip=True))
         else:
@@ -60,7 +76,7 @@ def save_interview(writer_name, interview_url):
         print('Failed to get', interview_url)
         return
     dom = BeautifulSoup(resp.text, 'html.parser')
-    interview = dom.find(class_='detail-interviews-description')
+    interview = dom.find(class_='article-body')
     paragraphs = [p.get_text() for p in interview.find_all('p')]
     filename = path.join(raw_interview_path, writer_name + '.txt')
     # appending allows writers with multiple interviews to combine into one file
