@@ -4,6 +4,7 @@ var viz = d3.select('#viz');
 var margin = 50,
     width,
     height,
+    svg,
     canvas;
 var nodes = [],
     links = [],
@@ -11,7 +12,10 @@ var nodes = [],
     currNames = new Set();
 var link,
     node;
-var writers;
+var writers,
+    focus;
+var sidebar = d3.select('#sidebar'),
+    examples = sidebar.select('#examples');
 
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(d => d.writer_name))
@@ -45,7 +49,7 @@ function displayWriterNames(writers) {
 
 function startViz(name) {
     viz.html(' ');
-    var svg = viz.append('svg');
+    svg = viz.append('svg');
     var dims = svg.node().getBoundingClientRect();
     width = dims.width - 2 * margin;
     height = dims.height - 2 * margin;
@@ -53,6 +57,9 @@ function startViz(name) {
         .attr('transform', 'translate(' + margin + ',' + margin + ')');
 
     addFocus(name);
+    if (nodes.length > 1) {
+        sidebarOther(nodes[1]);
+    }
     link = canvas.append('g')
         .attr('class', 'links')
         .selectAll('line')
@@ -65,7 +72,7 @@ function startViz(name) {
         .enter().append('g');
     node.append('text')
         .text(d => d.writer_name)
-        .on('click', growGraph);
+        .on('click', sidebarOther);
 
     simulation.nodes(nodes).on('tick', ticked);
     simulation.force("center", d3.forceCenter(width / 2, height / 2))
@@ -109,17 +116,18 @@ function ticked() {
 
 function addFocus(name) {
     foci.add(name);
-    var writer = writers[name];
+    focus = writers[name];
+    sidebarFocus();
     if (!currNames.has(name)) {
         console.log(name);
         currNames.add(name);
-        nodes.push(writer);
+        nodes.push(focus);
     }
-    for (var influencerName in writer.influencers) {
+    for (var influencerName in focus.influencers) {
         links.push({
             source: influencerName,
             target: name,
-            context: writer.influencers[influencerName]
+            context: focus.influencers[influencerName]
         });
         if (currNames.has(influencerName)) {
             continue;
@@ -128,11 +136,11 @@ function addFocus(name) {
         nodes.push(influencer);
         currNames.add(influencerName);
     }
-    for (var influenceeName in writer.influencees) {
+    for (var influenceeName in focus.influencees) {
         links.push({
             source: name,
             target: influenceeName,
-            context: writer.influencees[influenceeName]
+            context: focus.influencees[influenceeName]
         });
         if (currNames.has(influenceeName)) {
             continue;
@@ -144,6 +152,11 @@ function addFocus(name) {
 }
 
 function growGraph(writer) {
+    width += 500;
+    height += 500;
+    svg.style('width', width + 2 * margin);
+    svg.style('height', height + 2 * margin);
+
     addFocus(writer.writer_name);
     link = link.data(links)
         .enter().append('line')
@@ -153,12 +166,65 @@ function growGraph(writer) {
         .enter().append('g');
     newNodes.append('text')
         .text(d => d.writer_name)
-        .on('click', growGraph);        
+        .on('click', sidebarOther);
     node = newNodes.merge(node);
 
     simulation.nodes(nodes);
     simulation.force('link').links(links);
     simulation.alpha(1).restart();
+}
+
+function sidebarFocus() {
+    sidebar.select('#focus').text(focus.writer_name);
+    sidebar.select('#focus-image').attr('src', focus.photo_url);
+}
+function sidebarOther(writer) {
+    examples.html(' ');
+    sidebar.select('#other-writer').text(writer.writer_name);
+    if (writer.writer_name in focus.influencers &&
+        writer.writer_name in focus.influencees) {
+        sidebar.select('#influence-sentence')
+            .text('influenced and was influenced by');
+        examples.append('h4')
+            .text('From ' + focus.writer_name + "'s interview:");
+        examples.selectAll('p .influencer-example')
+            .data(focus.influencers[writer.writer_name])
+            .enter().append('p').text(d => '… ' + d + ' …');
+        examples.append('h4')
+            .text('From ' + writer.writer_name + "'s interview:");
+        examples.selectAll('p .influencee-example')
+            .data(focus.influencees[writer.writer_name])
+            .enter().append('p').text(d => '… ' + d + ' …');
+    }
+    else if (writer.writer_name in focus.influencers) {
+        sidebar.select('#influence-sentence')
+            .text('was influenced by');
+        examples.append('h4')
+            .text('From ' + focus.writer_name + "'s interview:");
+        examples.selectAll('p .influencer-example')
+            .data(focus.influencers[writer.writer_name])
+            .enter().append('p').text(d => '… ' + d + ' …');
+    }
+    else if (writer.writer_name in focus.influencees) {
+        sidebar.select('#influence-sentence')
+            .text('influenced');
+            examples.append('h4')
+                .text('From ' + writer.writer_name + "'s interview:");
+        examples.selectAll('p .influencee-example')
+            .data(focus.influencees[writer.writer_name])
+            .enter().append('p').text(d => '… ' + d + ' …');
+    }
+    else {
+        sidebar.select('#influence-sentence')
+            .text('has unknown relationship to');
+    }
+    sidebar.select('#focus-other')
+        .text('Focus on ' + writer.writer_name + "'s connections.")
+        .on('click', function() {
+            var prevFocus = focus;
+            growGraph(writer);
+            sidebarOther(prevFocus); // Switcharoo!!!!!
+            });
 }
 
 function lastNameCompare(a, b) {

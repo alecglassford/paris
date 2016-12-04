@@ -43,7 +43,7 @@ def get_decade_listing(index_url):
             author = {}
             author['writer_name'] = interview.h1.get_text()
             author['interview_url'] = proper_url(interview.a['href'])
-            if 'data-src' in interview.img:
+            if 'data-src' in interview.img.attrs:
                 author['photo_url'] = proper_url(interview.img['data-src'])
             else:
                 author['photo_url'] = proper_url(interview.img['src'])
