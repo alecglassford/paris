@@ -1,0 +1,70 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    /* Straight off the Paris Review website! */
+    font-family: "garamond-premier-pro", Georgia, Cambria, Times New Roman, Times, serif;
+}
+
+#heading {
+    /*background-color: blue;*/
+}
+
+#main {
+    display: flex;
+    flex-direction: row;
+    min-height: 1000px;
+    width: 100%;
+}
+
+#viz {
+    /*background-color: green;*/
+    flex: 2 0 0;
+    overflow: scroll;
+}
+
+#viz div {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+#viz div p {
+    flex: 1 0 25%;
+}
+
+#viz p:hover {
+    font-weight: bolder;
+    color: #5cb89a; /* Paris Review color scheme :) */
+    cursor: pointer;
+}
+
+#viz svg {
+    width: 200%;
+    height: 100%;
+}
+
+#viz svg text {
+    font-size: 10px;
+}
+
+#viz svg text:hover {
+    font-weight: bolder;
+    color: #5cb89a; /* Paris Review color scheme :) */
+    cursor: pointer;
+}
+
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+#sidebar {
+    /*background-color: red;*/
+    flex: 1 0 0;
+}
+
+h1 {
+    font-weight: normal;
+}
