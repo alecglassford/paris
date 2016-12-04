@@ -11,4 +11,4 @@ makedirs(influence_path, exist_ok=True)
 
 listing_filename = path.join(data_path, 'interviews.json')
 
-final_filename = 
+final_filename = path.join(data_path, 'writers.json')

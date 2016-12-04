@@ -31,7 +31,7 @@ def save_influences():
     for writer in writers:
         current_name = writer['writer_name']
         influences = influences_of(current_name)
-        filename = path.join(influence_path, current_name + '.txt')
+        filename = path.join(influence_path, current_name + '.json')
         with open(filename, 'w') as output:
             json.dump(influences, output, ensure_ascii=False, indent=2)
         print('Wrote to', filename)
