@@ -14,7 +14,7 @@ body {
 #main {
     display: flex;
     flex-direction: row;
-    min-height: 1000px;
+    height: 1000px;
     width: 100%;
 }
 
@@ -51,7 +51,7 @@ body {
 
 #viz svg text:hover {
     font-weight: bolder;
-    color: #5cb89a; /* Paris Review color scheme :) */
+    fill: #5cb89a; /* Paris Review color scheme :) */
     cursor: pointer;
 }
 
@@ -67,10 +67,13 @@ body {
     overflow: scroll;
 }
 
-.hyper:hover {
-    font-weight: bolder;
+.hyper {
     color: #5cb89a; /* Paris Review color scheme :) */
     cursor: pointer;
+}
+
+.hyper:hover {
+    font-weight:bolder;
 }
 
 #focus-image {
@@ -80,4 +83,25 @@ body {
 
 h1 {
     font-weight: normal;
+}
+
+.links line.focus-influencee {
+    stroke: red;
+}
+
+.links line.focus-influencer {
+    stroke: blue;
+}
+
+.focus text{
+    font-weight: bolder;
+    font-variant: small-caps;
+}
+
+#viz svg .current-focus text {
+    font-size: 2em;
+}
+
+.nodes g {
+    text-anchor: middle;
 }

@@ -50,37 +50,39 @@ function displayWriterNames(writers) {
 function startViz(name) {
     viz.html(' ');
     svg = viz.append('svg');
+    // http://www.d3noob.org/2013/03/d3js-force-directed-graph-example-basic.html
+    // build the arrow.
+    svg.append("svg:defs").selectAll("marker")
+        .data(["end"])
+      .enter().append("svg:marker")
+        .attr("id", String)
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 50)
+        .attr("refY", 0)
+        .attr("markerWidth", 5)
+        .attr("markerHeight", 5)
+        .attr("orient", "auto")
+      .append("svg:path")
+        .attr("d", "M0,-5L10,0L0,5");
     var dims = svg.node().getBoundingClientRect();
-    width = dims.width - 2 * margin;
-    height = dims.height - 2 * margin;
+    width = dims.width - 2 * margin - 500;
+    height = dims.height - 2 * margin - 500;
     canvas = svg.append('g')
         .attr('transform', 'translate(' + margin + ',' + margin + ')');
+    link = canvas.append('g')
+        .attr('class', 'links')
+        .selectAll('line');
+    node = canvas.append('g')
+        .attr('class', 'nodes')
+        .selectAll('g');
 
-    addFocus(name);
+    growGraph(name);
     if (nodes.length > 1) {
         sidebarOther(nodes[1]);
     }
-    link = canvas.append('g')
-        .attr('class', 'links')
-        .selectAll('line')
-        .data(links)
-        .enter().append('line');
-    node = canvas.append('g')
-        .attr('class', 'nodes')
-        .selectAll('g')
-        .data(nodes)
-        .enter().append('g');
-    node.append('text')
-        .text(d => d.writer_name)
-        .on('click', sidebarOther);
-
-    simulation.nodes(nodes).on('tick', ticked);
-    simulation.force("center", d3.forceCenter(width / 2, height / 2))
-        .force('link').links(links);
 }
 
 function ticked() {
-    console.log('hi');
     var k = 200 * simulation.alpha();
     link.each(function(d) {
         if (!foci.has(d.source.writer_name)){
@@ -114,12 +116,31 @@ function ticked() {
     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 }
 
+function switchFocus(name) {
+    focus = writers[name];
+    sidebarFocus();
+    colorLinks();
+    node.classed('focus', d => foci.has(d.writer_name));
+    node.classed('current-focus', d => focus === d);
+}
+
+function colorLinks() {
+    link.attr('class', function (d) {
+        console.log(d);
+        if (d.source === focus) {
+            return 'focus-influencee';
+        }
+        if (d.target === focus) {
+            return 'focus-influencer';
+        }
+        return '';
+    });
+}
+
 function addFocus(name) {
     foci.add(name);
     focus = writers[name];
-    sidebarFocus();
     if (!currNames.has(name)) {
-        console.log(name);
         currNames.add(name);
         nodes.push(focus);
     }
@@ -129,12 +150,11 @@ function addFocus(name) {
             target: name,
             context: focus.influencers[influencerName]
         });
-        if (currNames.has(influencerName)) {
-            continue;
+        if (!currNames.has(influencerName)) {
+            var influencer = writers[influencerName];
+            nodes.push(influencer);
+            currNames.add(influencerName);
         }
-        var influencer = writers[influencerName];
-        nodes.push(influencer);
-        currNames.add(influencerName);
     }
     for (var influenceeName in focus.influencees) {
         links.push({
@@ -142,24 +162,23 @@ function addFocus(name) {
             target: influenceeName,
             context: focus.influencees[influenceeName]
         });
-        if (currNames.has(influenceeName)) {
-            continue;
+        if (!currNames.has(influenceeName)) {
+            var influencee = writers[influenceeName];
+            nodes.push(influencee);
+            currNames.add(influenceeName);
         }
-        var influencee = writers[influenceeName];
-        nodes.push(influencee);
-        currNames.add(influenceeName);
     }
 }
 
-function growGraph(writer) {
+function growGraph(name) {
     width += 500;
     height += 500;
     svg.style('width', width + 2 * margin);
     svg.style('height', height + 2 * margin);
 
-    addFocus(writer.writer_name);
+    addFocus(name);
     link = link.data(links)
-        .enter().append('line')
+        .enter().append('line').attr('marker-end', 'url(#end)')
         .merge(link);
 
     var newNodes = node.data(nodes)
@@ -169,9 +188,8 @@ function growGraph(writer) {
         .on('click', sidebarOther);
     node = newNodes.merge(node);
 
-    simulation.nodes(nodes);
-    simulation.force('link').links(links);
-    simulation.alpha(1).restart();
+    restartSimulation();
+    switchFocus(name);
 }
 
 function sidebarFocus() {
@@ -222,7 +240,12 @@ function sidebarOther(writer) {
         .text('Focus on ' + writer.writer_name + "'s connections.")
         .on('click', function() {
             var prevFocus = focus;
-            growGraph(writer);
+            if (foci.has(writer.writer_name)) {
+                switchFocus(writer.writer_name);
+            }
+            else {
+                growGraph(writer.writer_name);
+            }
             sidebarOther(prevFocus); // Switcharoo!!!!!
             });
 }
@@ -239,4 +262,11 @@ function lastNameCompare(a, b) {
         return 1;
     }
     return 0;
+}
+
+function restartSimulation() {
+    simulation.nodes(nodes).on('tick', ticked);
+    simulation.force("center", d3.forceCenter(width / 2, height / 2))
+        .force('link').links(links);
+    simulation.alpha(1).restart();
 }
