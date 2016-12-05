@@ -145,6 +145,9 @@ function addFocus(name) {
         nodes.push(focus);
     }
     for (var influencerName in focus.influencers) {
+        if (foci.has(influencerName)) {
+            continue;
+        }
         links.push({
             source: influencerName,
             target: name,
@@ -157,6 +160,9 @@ function addFocus(name) {
         }
     }
     for (var influenceeName in focus.influencees) {
+        if (foci.has(influenceeName)) {
+            continue;
+        }
         links.push({
             source: name,
             target: influenceeName,
