@@ -65,8 +65,8 @@ function startViz(name) {
       .append("svg:path")
         .attr("d", "M0,-5L10,0L0,5");
     var dims = svg.node().getBoundingClientRect();
-    width = dims.width - 2 * margin - 500;
-    height = dims.height - 2 * margin - 500;
+    width = dims.width - 2 * margin;
+    height = dims.height - 2 * margin;
     canvas = svg.append('g')
         .attr('transform', 'translate(' + margin + ',' + margin + ')');
     link = canvas.append('g')
@@ -177,11 +177,11 @@ function growGraph(name) {
     svg.style('height', height + 2 * margin);
 
     addFocus(name);
-    link = link.data(links)
+    link = link.data(links, linkKey)
         .enter().append('line').attr('marker-end', 'url(#end)')
         .merge(link);
 
-    var newNodes = node.data(nodes)
+    var newNodes = node.data(nodes, nodeKey)
         .enter().append('g');
     newNodes.append('text')
         .text(d => d.writer_name)
@@ -236,8 +236,9 @@ function sidebarOther(writer) {
         sidebar.select('#influence-sentence')
             .text('has unknown relationship to');
     }
+    sidebar.select('#other-image').attr('src', writer.photo_url);
     sidebar.select('#focus-other')
-        .text('Focus on ' + writer.writer_name + "'s connections.")
+        .text('[Focus on ' + writer.writer_name + "'s connections.]")
         .on('click', function() {
             var prevFocus = focus;
             if (foci.has(writer.writer_name)) {
@@ -247,7 +248,13 @@ function sidebarOther(writer) {
                 growGraph(writer.writer_name);
             }
             sidebarOther(prevFocus); // Switcharoo!!!!!
-            });
+        });
+    sidebar.select('#remove-link')
+        .text('[Remove the connection between ' + focus.writer_name + ' and ' +
+                writer.writer_name + '.]')
+        .on('click', function() {
+            removeLink(focus.writer_name, writer.writer_name);
+        });
 }
 
 function lastNameCompare(a, b) {
@@ -269,4 +276,45 @@ function restartSimulation() {
     simulation.force("center", d3.forceCenter(width / 2, height / 2))
         .force('link').links(links);
     simulation.alpha(1).restart();
+}
+
+function removeLink(name1, name2) {
+    links = links.filter(function (l) {
+        return !((l.source.writer_name === name1 && l.target.writer_name === name2) ||
+            (l.source.writer_name === name2 && l.target.writer_name === name1));
+    });
+    if (!linksContains(name1)) {
+        removeNode(name1);
+    }
+    if (!linksContains(name2)) {
+        removeNode(name2);
+    }
+    node = node.data(nodes, nodeKey);
+    node.exit().remove();
+    link = link.data(links, linkKey);
+    link.exit().remove();
+}
+
+function removeNode(name) {
+    console.log(name);
+    nodes = nodes.filter(n => n.writer_name !== name);
+    currNames.delete(name);
+    if (foci.delete(name)) {
+        switchFocus(foci.values().next().value);
+    }
+    else { // Deleted a non-focus, so need to switch the "other" part of sidebar
+        sidebarOther(nodes[0]);
+    }
+}
+
+function linksContains (name) {
+    return links.filter(l => l.source.writer_name === name || l.target.writer_name === name).length > 0;
+}
+
+function nodeKey(d) {
+    return d.writer_name;
+}
+
+function linkKey(d) {
+    return d.source.writer_name + '-' + d.target.writer_name;
 }

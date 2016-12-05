@@ -9,12 +9,13 @@ body {
 
 #heading {
     /*background-color: blue;*/
+    height: 20vh;
 }
 
 #main {
     display: flex;
     flex-direction: row;
-    height: 1000px;
+    height: 80vh;
     width: 100%;
 }
 
@@ -22,6 +23,7 @@ body {
     /*background-color: green;*/
     flex: 2 0 0;
     overflow: scroll;
+    height: 100%;
 }
 
 #viz div {
@@ -79,6 +81,12 @@ body {
 #focus-image {
     max-height: 300px;
     max-width: 300px;
+}
+
+#other-image {
+    float:right;
+    max-height: 100px;
+    max-width: 100px;
 }
 
 h1 {
