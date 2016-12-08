@@ -59,11 +59,23 @@ function startViz(name) {
         .attr("viewBox", "0 -5 10 10")
         .attr("refX", 50)
         .attr("refY", 0)
-        .attr("markerWidth", 5)
-        .attr("markerHeight", 5)
+        .attr("markerWidth", 3)
+        .attr("markerHeight", 3)
         .attr("orient", "auto")
       .append("svg:path")
         .attr("d", "M0,-5L10,0L0,5");
+        svg.append("svg:defs").selectAll("marker")
+            .data(["small-end"])
+          .enter().append("svg:marker")
+            .attr("id", String)
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 50)
+            .attr("refY", 0)
+            .attr("markerWidth", 1)
+            .attr("markerHeight", 1)
+            .attr("orient", "auto")
+          .append("svg:path")
+            .attr("d", "M0,-5L10,0L0,5");
     var dims = svg.node().getBoundingClientRect();
     width = dims.width - 2 * margin;
     height = dims.height - 2 * margin;
@@ -126,11 +138,16 @@ function switchFocus(name) {
 
 function colorLinks() {
     link.attr('class', function (d) {
-        console.log(d);
         if (d.source === focus) {
+            if (d.target.writer_name in focus.influencers) {
+                return 'focus-both';
+            }
             return 'focus-influencee';
         }
         if (d.target === focus) {
+            if (d.source.writer_name in focus.influencees) {
+                return 'focus-both';
+            }
             return 'focus-influencer';
         }
         return '';
@@ -184,7 +201,7 @@ function growGraph(name) {
 
     addFocus(name);
     link = link.data(links, linkKey)
-        .enter().append('line').attr('marker-end', 'url(#end)')
+        .enter().append('line')
         .merge(link);
 
     var newNodes = node.data(nodes, nodeKey)
@@ -206,6 +223,9 @@ function sidebarFocus() {
     sidebar.select('#focus-image').attr('src', focus.photo_url);
 }
 function sidebarOther(writer) {
+    node.classed('current-other', d => d === writer);
+    link.classed('current-link', d=> (d.source === writer && d.target === focus) ||
+                                     (d.source === focus && d.target === writer));
     examples.html(' ');
     sidebar.select('#other-writer').text(writer.writer_name + ' (' + writer.writer_type + ')');
     if (writer.writer_name in focus.influencers &&

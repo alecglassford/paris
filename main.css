@@ -60,6 +60,8 @@ body {
 .links line {
   stroke: #999;
   stroke-opacity: 0.5;
+  stroke-width: 3;
+  marker-end: url(#end);
 }
 
 #sidebar {
@@ -107,6 +109,11 @@ h1 {
     stroke: #beaed4;
 }
 
+.links line.current-link {
+    stroke-width: 10;
+    marker-end: url(#small-end);
+}
+
 .focus text {
     font-weight: bolder;
     font-variant: small-caps;
@@ -126,6 +133,10 @@ h1 {
 
 #viz svg .current-focus text {
     font-size: 2em;
+}
+
+#viz svg .current-other text {
+    font-size: 1.5em;
 }
 
 .nodes g {
