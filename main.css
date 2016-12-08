@@ -59,7 +59,7 @@ body {
 
 .links line {
   stroke: #999;
-  stroke-opacity: 0.6;
+  stroke-opacity: 0.5;
 }
 
 #sidebar {
@@ -93,17 +93,35 @@ h1 {
     font-weight: normal;
 }
 
+/* Colors from colorbrewer */
+
 .links line.focus-influencee {
-    stroke: red;
+    stroke: #e41a1c;
 }
 
 .links line.focus-influencer {
-    stroke: blue;
+    stroke: #377eb8;
 }
 
-.focus text{
+.links line.focus-both {
+    stroke: #beaed4;
+}
+
+.focus text {
     font-weight: bolder;
     font-variant: small-caps;
+}
+
+.type-fiction text {
+    fill: #1b9e77;
+}
+
+.type-poetry text {
+    fill: #d95f02;
+}
+
+.type-other text {
+    fill: #7570b3;
 }
 
 #viz svg .current-focus text {

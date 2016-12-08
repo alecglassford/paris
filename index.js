@@ -189,6 +189,9 @@ function growGraph(name) {
 
     var newNodes = node.data(nodes, nodeKey)
         .enter().append('g');
+    newNodes.classed('type-fiction', d => d.writer_type === 'fiction')
+            .classed('type-poetry', d => d.writer_type === 'poetry')
+            .classed('type-other', d => d.writer_type !== 'fiction' && d.writer_type !== 'poetry');
     newNodes.append('text')
         .text(d => d.writer_name)
         .on('click', sidebarOther);
@@ -199,12 +202,12 @@ function growGraph(name) {
 }
 
 function sidebarFocus() {
-    sidebar.select('#focus').text(focus.writer_name);
+    sidebar.select('#focus').text(focus.writer_name + ' (' + focus.writer_type + ')');
     sidebar.select('#focus-image').attr('src', focus.photo_url);
 }
 function sidebarOther(writer) {
     examples.html(' ');
-    sidebar.select('#other-writer').text(writer.writer_name);
+    sidebar.select('#other-writer').text(writer.writer_name + ' (' + writer.writer_type + ')');
     if (writer.writer_name in focus.influencers &&
         writer.writer_name in focus.influencees) {
         sidebar.select('#influence-sentence')
