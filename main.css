@@ -86,14 +86,13 @@ body {
 }
 
 #focus-image {
-    max-height: 300px;
-    max-width: 300px;
+    max-height: 200px;
+    max-width: 200px;
 }
 
 #other-image {
-    float:right;
-    max-height: 100px;
-    max-width: 100px;
+    max-height: 200px;
+    max-width: 200px;
 }
 
 h1 {
@@ -147,3 +146,7 @@ h1 {
 .nodes g {
     text-anchor: middle;
 }
+
+.paris-link {
+    display: block;
+    font-size: 2em;

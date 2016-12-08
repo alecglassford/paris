@@ -23,9 +23,29 @@ def influences_of(current_name):
             continue
         paragraphs = other_writer['pattern'].findall(interview_text)
         if paragraphs:
+            paragraphs = add_speaker(paragraphs, interview_text)
             result[other_name] = paragraphs
     print('Found that', current_name, 'was influenced by', result.keys())
     return result
+
+def add_speaker(paragraphs, interview_text):
+    with_speaker = []
+    split_text = interview_text.split('\n')
+    for paragraph in paragraphs:
+        index = split_text.index(paragraph)
+        first = True
+        while True:
+            if index == 0: # At the start, therefore: INTERVIWER
+                with_speaker.append('INTERVIEWER: ' + paragraph)
+                break
+            if split_text[index].isupper(): # e.g. 'INTERVIEWER'
+                with_speaker.append(split_text[index] + ': ' + paragraph)
+                break
+            if first:
+                paragraph = ' ... ' + paragraph # only if more than 1 back
+                first = False
+            index -= 1
+    return with_speaker
 
 def save_influences():
     for writer in writers:

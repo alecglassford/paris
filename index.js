@@ -219,7 +219,9 @@ function growGraph(name) {
 }
 
 function sidebarFocus() {
-    sidebar.select('#focus').text(focus.writer_name + ' (' + focus.writer_type + ')');
+    sidebar.select('#focus')
+        .text(focus.writer_name + ' (' + focus.writer_type + ')')
+        .attr('href', focus.interview_url);
     sidebar.select('#focus-image').attr('src', focus.photo_url);
 }
 function sidebarOther(writer) {
@@ -227,39 +229,45 @@ function sidebarOther(writer) {
     link.classed('current-link', d=> (d.source === writer && d.target === focus) ||
                                      (d.source === focus && d.target === writer));
     examples.html(' ');
-    sidebar.select('#other-writer').text(writer.writer_name + ' (' + writer.writer_type + ')');
+    sidebar.select('#other-writer')
+        .text(writer.writer_name + ' (' + writer.writer_type + ')')
+        .attr('href', writer.interview_url);
     if (writer.writer_name in focus.influencers &&
         writer.writer_name in focus.influencees) {
         sidebar.select('#influence-sentence')
             .text('influenced and was influenced by');
-        examples.append('h4')
-            .text('From ' + focus.writer_name + "'s interview:");
+        examples.append('a')
+            .text('From ' + focus.writer_name + "'s interview:")
+            .attr('href', focus.interview_url);
         examples.selectAll('p .influencer-example')
             .data(focus.influencers[writer.writer_name])
-            .enter().append('p').text(d => '… ' + d + ' …');
-        examples.append('h4')
-            .text('From ' + writer.writer_name + "'s interview:");
+            .enter().append('p').text(d => d + ' …');
+        examples.append('a')
+            .text('From ' + writer.writer_name + "'s interview:")
+            .attr('href', writer.interview_url);
         examples.selectAll('p .influencee-example')
             .data(focus.influencees[writer.writer_name])
-            .enter().append('p').text(d => '… ' + d + ' …');
+            .enter().append('p').text(d => d + ' …');
     }
     else if (writer.writer_name in focus.influencers) {
         sidebar.select('#influence-sentence')
             .text('was influenced by');
-        examples.append('h4')
-            .text('From ' + focus.writer_name + "'s interview:");
+        examples.append('a')
+            .text('From ' + focus.writer_name + "'s interview:")
+            .attr('href', focus.interview_url);
         examples.selectAll('p .influencer-example')
             .data(focus.influencers[writer.writer_name])
-            .enter().append('p').text(d => '… ' + d + ' …');
+            .enter().append('p').text(d => d + ' …');
     }
     else if (writer.writer_name in focus.influencees) {
         sidebar.select('#influence-sentence')
             .text('influenced');
-            examples.append('h4')
-                .text('From ' + writer.writer_name + "'s interview:");
+            examples.append('a')
+                .text('From ' + writer.writer_name + "'s interview:")
+                .attr('href', writer.interview_url);
         examples.selectAll('p .influencee-example')
             .data(focus.influencees[writer.writer_name])
-            .enter().append('p').text(d => '… ' + d + ' …');
+            .enter().append('p').text(d => d + ' …');
     }
     else {
         sidebar.select('#influence-sentence')
