@@ -201,7 +201,7 @@ function growGraph(name) {
 
     addFocus(name);
     link = link.data(links, linkKey)
-        .enter().append('line')
+        .enter().append('line').on('click', sidebarLink)
         .merge(link);
 
     var newNodes = node.data(nodes, nodeKey)
@@ -284,6 +284,21 @@ function sidebarOther(writer) {
         .on('click', function() {
             removeLink(focus.writer_name, writer.writer_name);
         });
+}
+
+function sidebarLink(link_data) {
+    console.log(link_data);
+    if (link_data.source === focus) {
+        sidebarOther(link_data.target);
+    } else if (link_data.target === focus) {
+        sidebarOther(link_data.source);
+    } else if (foci.has(link_data.source.writer_name)) {
+        switchFocus(link_data.source.writer_name);
+        sidebarOther(link_data.target);
+    } else if (foci.has(link_data.target.writer_name)) {
+        switchFocus(link_data.target.writer_name);
+        sidebarOther(link_data.source);
+    }
 }
 
 function lastNameCompare(a, b) {

@@ -64,6 +64,11 @@ body {
   marker-end: url(#end);
 }
 
+.links line:hover {
+    stroke-width: 8;
+    cursor: pointer;
+}
+
 #sidebar {
     /*background-color: red;*/
     flex: 1 0 0;
