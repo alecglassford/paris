@@ -13,7 +13,8 @@ var nodes = [],
 var link,
     node;
 var writers,
-    focus;
+    focus,
+    other;
 var sidebar = d3.select('#sidebar'),
     examples = sidebar.select('#examples');
 
@@ -211,7 +212,15 @@ function growGraph(name) {
             .classed('type-other', d => d.writer_type !== 'fiction' && d.writer_type !== 'poetry');
     newNodes.append('text')
         .text(d => d.writer_name)
-        .on('click', sidebarOther);
+        .on('click', function (d) {
+            if (focus === d) {
+                return;
+            } else if (other === d) {
+                focusOnOther(d.writer_name);
+            } else {
+                sidebarOther(d);
+            }
+        });
     node = newNodes.merge(node);
 
     restartSimulation();
@@ -225,6 +234,7 @@ function sidebarFocus() {
     sidebar.select('#focus-image').attr('src', focus.photo_url);
 }
 function sidebarOther(writer) {
+    other = writer;
     node.classed('current-other', d => d === writer);
     link.classed('current-link', d=> (d.source === writer && d.target === focus) ||
                                      (d.source === focus && d.target === writer));
@@ -277,14 +287,7 @@ function sidebarOther(writer) {
     sidebar.select('#focus-other')
         .text('[Focus on ' + writer.writer_name + "'s connections.]")
         .on('click', function() {
-            var prevFocus = focus;
-            if (foci.has(writer.writer_name)) {
-                switchFocus(writer.writer_name);
-            }
-            else {
-                growGraph(writer.writer_name);
-            }
-            sidebarOther(prevFocus); // Switcharoo!!!!!
+            focusOnOther(writer.writer_name);
         });
     sidebar.select('#remove-link')
         .text('[Remove the connection between ' + focus.writer_name + ' and ' +
@@ -369,4 +372,15 @@ function nodeKey(d) {
 
 function linkKey(d) {
     return d.source.writer_name + '-' + d.target.writer_name;
+}
+
+function focusOnOther(writer_name) {
+    var prevFocus = focus;
+    if (foci.has(writer_name)) {
+        switchFocus(writer_name);
+    }
+    else {
+        growGraph(writer_name);
+    }
+    sidebarOther(prevFocus); // Switcharoo!!!!!
 }
