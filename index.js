@@ -17,6 +17,10 @@ var writers,
     other;
 var sidebar = d3.select('#sidebar'),
     examples = sidebar.select('#examples');
+// These are used if a writer has done multiple interviews.
+// I don't think anyone has done more than 2 in the history of the magazine.
+// But let's provide up to 6, just to account for future literary superstars
+var ordinals = ['second', 'third', 'fourth', 'fifth', 'sixth'];
 
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(d => d.writer_name))
@@ -227,10 +231,24 @@ function growGraph(name) {
     switchFocus(name);
 }
 
+function handleExtra(writer, parentSelector) {
+    var parent = sidebar.select(parentSelector);
+    parent.html(' ');
+    if (writer.extra && writer.extra.length) {
+        parent.selectAll('a')
+            .data(writer.extra)
+            .enter()
+            .append('a')
+            .text((d, i) => `(${writer.writer_name}'s ${ordinals[i]} interview)`)
+            .attr('href', d => d);
+    }
+}
+
 function sidebarFocus() {
     sidebar.select('#focus')
         .text(focus.writer_name + ' (' + focus.writer_type + ')')
         .attr('href', focus.interview_url);
+    handleExtra(focus, '#focus-extra');
     sidebar.select('#focus-image').attr('src', focus.photo_url);
 }
 function sidebarOther(writer) {
@@ -242,6 +260,7 @@ function sidebarOther(writer) {
     sidebar.select('#other-writer')
         .text(writer.writer_name + ' (' + writer.writer_type + ')')
         .attr('href', writer.interview_url);
+    handleExtra(writer, '#other-extra');
     if (writer.writer_name in focus.influencers &&
         writer.writer_name in focus.influencees) {
         sidebar.select('#influence-sentence')
@@ -249,12 +268,16 @@ function sidebarOther(writer) {
         examples.append('a')
             .text('From ' + focus.writer_name + "'s interview:")
             .attr('href', focus.interview_url);
+        examples.append('p').attr('id', 'focus-example-extra');
+        handleExtra(focus, '#focus-example-extra');
         examples.selectAll('p .influencer-example')
             .data(focus.influencers[writer.writer_name])
             .enter().append('p').text(d => d + ' …');
         examples.append('a')
             .text('From ' + writer.writer_name + "'s interview:")
             .attr('href', writer.interview_url);
+        examples.append('p').attr('id', 'other-example-extra');
+        handleExtra(writer, '#other-example-extra');
         examples.selectAll('p .influencee-example')
             .data(focus.influencees[writer.writer_name])
             .enter().append('p').text(d => d + ' …');
@@ -265,6 +288,8 @@ function sidebarOther(writer) {
         examples.append('a')
             .text('From ' + focus.writer_name + "'s interview:")
             .attr('href', focus.interview_url);
+        examples.append('p').attr('id', 'focus-example-extra');
+        handleExtra(focus, '#focus-example-extra');
         examples.selectAll('p .influencer-example')
             .data(focus.influencers[writer.writer_name])
             .enter().append('p').text(d => d + ' …');
@@ -272,9 +297,11 @@ function sidebarOther(writer) {
     else if (writer.writer_name in focus.influencees) {
         sidebar.select('#influence-sentence')
             .text('influenced');
-            examples.append('a')
-                .text('From ' + writer.writer_name + "'s interview:")
-                .attr('href', writer.interview_url);
+        examples.append('a')
+            .text('From ' + writer.writer_name + "'s interview:")
+            .attr('href', writer.interview_url);
+        examples.append('p').attr('id', 'other-example-extra');
+        handleExtra(writer, '#other-example-extra');
         examples.selectAll('p .influencee-example')
             .data(focus.influencees[writer.writer_name])
             .enter().append('p').text(d => d + ' …');

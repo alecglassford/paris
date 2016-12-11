@@ -13,7 +13,9 @@ for writer in listing:
     if name in result: # We've already made an entry for this writer
         if 'extra' not in result[name]:
             result[name]['extra'] = []
-        result[name]['extra'].append(writer)
+        if writer['writer_type'] not in result[name]['writer_type']: # weak test, but works
+            result[name]['writer_type'] += ', ' + writer['writer_type']
+        result[name]['extra'].append(writer['interview_url'])
         continue
 
     filename = path.join(influence_path, name + '.json')
