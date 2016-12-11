@@ -1,6 +1,10 @@
 'use strict';
 
 var viz = d3.select('#viz');
+var controlTheScroll = false;
+viz.on('mousemove', function() {
+    controlTheScroll = false;
+});
 var margin = 50,
     width,
     height,
@@ -102,14 +106,12 @@ function startViz(name) {
 function ticked() {
     var k = 200 * simulation.alpha();
     link.each(function(d) {
-        if (!foci.has(d.source.writer_name)){
-            // console.log('moving', d.source.writer_name, 'up');
-            d.source.y -=k;
+        if (foci.has(d.source.writer_name) && foci.has(d.target.writer_name)) {
+            d.source.y -=  k;
+            d.target.y += k;
         }
-        if (!foci.has(d.target.writer_name)){
-            // console.log('moving', d.source.writer_name, 'down');
-            d.target.y +=k;
-        }
+        d.source.y -= foci.has(d.source.writer_name) ? 0 : k;
+        d.target.y += foci.has(d.target.writer_name) ? 0 : k;
     });
     node.each(function(d) {
         if (d.y < 0 ) {
@@ -133,7 +135,10 @@ function ticked() {
     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
     // Scroll to follow focus on each tick
-    centerFocus();
+    if (controlTheScroll) {
+        console.log('hey');
+        centerFocus();
+    }
 }
 
 function centerFocus() {
@@ -146,7 +151,7 @@ function centerFocus() {
     var deltaX = focusX - vizX;
     var deltaY = focusY - vizY;
     // Scroll less aggressively as simulation settles
-    var scale = Math.pow(simulation.alpha() - simulation.alphaMin(), 2);
+    var scale = simulation.alpha() - simulation.alphaMin();
     viz.node().scrollLeft += deltaX * scale;
     viz.node().scrollTop += deltaY * scale;
 }
@@ -377,6 +382,7 @@ function restartSimulation() {
     simulation.force("center", d3.forceCenter(width / 2, height / 2))
         .force('link').links(links);
     simulation.alpha(1).restart();
+    controlTheScroll = true;
 }
 
 function removeLink(name1, name2) {
