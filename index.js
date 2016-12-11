@@ -131,7 +131,26 @@ function ticked() {
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+    // Scroll to follow focus on each tick
+    centerFocus();
 }
+
+function centerFocus() {
+    var focusLocation = node.filter(d => d === focus).node().getBoundingClientRect();
+    var focusX = (focusLocation.left + focusLocation.right) / 2;
+    var focusY = (focusLocation.top + focusLocation.bottom) / 2;
+    var vizLocation = viz.node().getBoundingClientRect();
+    var vizX = (vizLocation.left + vizLocation.right) / 2;
+    var vizY = (vizLocation.top + vizLocation.bottom) / 2;
+    var deltaX = focusX - vizX;
+    var deltaY = focusY - vizY;
+    // Scroll less aggressively as simulation settles
+    var scale = Math.pow(simulation.alpha() - simulation.alphaMin(), 2);
+    viz.node().scrollLeft += deltaX * scale;
+    viz.node().scrollTop += deltaY * scale;
+}
+
 
 function switchFocus(name) {
     focus = writers[name];
