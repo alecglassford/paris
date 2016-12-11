@@ -45,7 +45,7 @@ function dataLoaded (error, data) {
 function displayWriterNames(writers) {
     var names = Object.keys(writers).sort(lastNameCompare);
     viz.html('');
-    viz.append('h2')
+    viz.append('h1')
         .text('Choose a writer to learn about!');
     viz.append('div')
         .selectAll('p')

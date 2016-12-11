@@ -3,19 +3,26 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    /* Straight off the Paris Review website! */
+    /* Adapted from the Paris Review website! */
     font-family: "garamond-premier-pro", Georgia, Cambria, Times New Roman, Times, serif;
 }
 
 #heading {
-    /*background-color: blue;*/
-    height: 20vh;
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.8),rgba(255,255,255,1)), url('paris.png');
+    min-height: 20vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#heading-center{
+    width: 50%;
 }
 
 #main {
     display: flex;
     flex-direction: row;
-    height: 80vh;
+    height: 100vh;
     width: 100%;
 }
 
@@ -97,6 +104,7 @@ body {
 
 h1 {
     font-weight: normal;
+    text-align: center;
 }
 
 /* Colors from colorbrewer */
