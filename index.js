@@ -27,7 +27,7 @@ var sidebar = d3.select('#sidebar'),
 var ordinals = ['second', 'third', 'fourth', 'fifth', 'sixth'];
 
 var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(d => d.writer_name))
+    .force("link", d3.forceLink().id(d => d.writer_name).strength(()=>1))
     .force("charge", d3.forceManyBody().strength(-3000))
     .force('collide', d3.forceCollide(80));
 
