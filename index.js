@@ -26,8 +26,13 @@ var sidebar = d3.select('#sidebar'),
 // But let's provide up to 6, just to account for future literary superstars
 var ordinals = ['second', 'third', 'fourth', 'fifth', 'sixth'];
 
+var fl = d3.forceLink();
+fl.originalStrength = fl.strength();
+
 var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(d => d.writer_name).strength(()=>1))
+    .force("link", fl.id(d => d.writer_name).strength(function(l) {
+        return Math.pow(fl.originalStrength(l), 0.5);
+    }))
     .force("charge", d3.forceManyBody().strength(-3000))
     .force('collide', d3.forceCollide(80));
 
@@ -136,7 +141,6 @@ function ticked() {
 
     // Scroll to follow focus on each tick
     if (controlTheScroll) {
-        console.log('hey');
         centerFocus();
     }
 }
